@@ -6,3 +6,10 @@ The folder contains Python code for training and using the deep learning models 
 * generate_features.py processes audio files, splits them into frames, calculates FFT and stores a them into Tensorflow .tfr files to be read during training. Input to the program is a list of folders, each should include a "sample labels XXX.txt" text file, which contains a list of audio files in the folder XXX and their corresponding class labels. Both, the FFT ans the labels are stored in the tfr files
 * train_and_test.py trains and test a deep residual model. It reads .tfr files, converts it into mel spectra and trains/tests models with cross valdation. Several parameters can be set in the default.ini file.
 * label_file.py takes an already trained model and labels an arbitrary file with the corresponding labels. The sample rate for labeling is read from defaults.ini.
+
+## Matlab
+The folder contains Matlab code for probabilistic segmentation of field recordings based on energy and classification into a set of classes (e.g. speech, singing, instrumental etc.)
+* segmentRecordingDeep.m is the main function that takes an audio file (field recording) and probabilities of classification of the file into a set of classes (as returned e.g. by the tensorflow model) and returns the segment boundaries and segment labels.
+
+## MIREX 2015, 2018
+The folders contains our submissions to [MIREX 2015 Music/Speech Classification and Detection task](https://www.music-ir.org/mirex/wiki/2015:Music/Speech_Classification_and_Detection_Results), as well as [MIREX 2018 Music and or Speech Detection task](https://www.music-ir.org/mirex/wiki/2018:Music_and_or_Speech_Detection_Results). See the enclosed READMEs for usage.
