@@ -19,6 +19,7 @@ def main(_):
     checkpoint_dir = os.path.join(log_dir, 'MODEL_FOLDER_NAME')
     do_mel = 0
 
+    # change folder name to contain files to label
     filenames=glob.glob(os.path.join(config['Folders']['db_root'],'sessions/*.mp3'))
 
     for file_name in filenames:
