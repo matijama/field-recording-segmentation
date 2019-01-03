@@ -13,3 +13,15 @@ The folder contains Matlab code for probabilistic segmentation of field recordin
 
 ## MIREX 2015, 2018
 The folders contains our submissions to [MIREX 2015 Music/Speech Classification and Detection task](https://www.music-ir.org/mirex/wiki/2015:Music/Speech_Classification_and_Detection_Results), as well as [MIREX 2018 Music and or Speech Detection task](https://www.music-ir.org/mirex/wiki/2018:Music_and_or_Speech_Detection_Results). See the enclosed READMEs for usage.
+
+## Tensorflow model
+The folder contains a trained tensorflow model export that labels 2 second audio fragments as solo singing, choir singing, instrumental or speech. Input to the model consists of 513x140 blocks of magnitude spectrogram values (as calculated e.g. by librosa stft) with window size 1024 and step size 315 at 22050 sampling rate. Output are the probabilities of the four target classes for each block.
+The model can be used in code as:
+```python
+  Df=# Nx513x140x1 sized array of magnitude fft blocks
+  exportpath=PATH_TO_EXPORT_FOLDER
+  with tf.Session() as sess:
+    tf.saved_model.loader.load(sess, ["scoring-tag"], exportpath)
+    predictions = tf.get_default_graph().get_tensor_by_name("predictions:0")
+    probabilities = sess.run([predictions], feed_dict={'xinput:0': Df})
+```
