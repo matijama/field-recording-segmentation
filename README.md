@@ -1,6 +1,6 @@
 # field-recording-segmentation
 Python and Matlab code for segmentation of field recordings. Please cite the following paper if you use the code in your research:
-* M. Marolt, C. Bohak, A. Kavčič, and M. Pesek, [Automatic segmentation of ethnomusicological field recordings](https://www.mdpi.com/2076-3417/9/3/439/pdf) Applied sciences, vol. 9, iss. 3, pp. 1-12, 2019.
+* M. Marolt, C. Bohak, A. Kavčič, and M. Pesek, [Automatic segmentation of ethnomusicological field recordings](https://www.mdpi.com/2076-3417/9/3/439/pdf), Applied sciences, vol. 9, iss. 3, pp. 1-12, 2019.
 
 ## Tensorflow
 The folder contains Python code for training and using the deep learning models for labelling field recordings into a set of classes (e.g. speech, singing, instrumental etc.)
