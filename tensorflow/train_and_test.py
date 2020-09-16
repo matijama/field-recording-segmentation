@@ -20,7 +20,7 @@ def main(_):
     if not os.path.isabs(log_dir):
         local = os.path.dirname(os.path.realpath(__file__))
         log_dir = os.path.join(local, log_dir)
-        tf.gfile.MakeDirs(log_dir)
+        tf.io.gfile.makedirs(log_dir)
 
     # setup temp file for logging
     with tempfile.TemporaryDirectory(prefix='run',dir=log_dir) as tmpdirname:
@@ -55,7 +55,7 @@ def trainmodel(trainset, testset, all_labels, num_freqs, block_len, write_dir, c
     n_epochs = config.getint('Dataset', 'n_epochs')
     batch_size=config.getint('Dataset','batch_size')
 
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
 
     linear_to_mel_weight_matrix = tf.contrib.signal.linear_to_mel_weight_matrix(
         num_mel_bins=config.getint('Spectrogram','mel_bands'),
@@ -66,7 +66,7 @@ def trainmodel(trainset, testset, all_labels, num_freqs, block_len, write_dir, c
 
     # create datasets and iterators
     dataset_train = tf.data.TFRecordDataset([f[0] for f in trainset]). \
-        apply(tf.contrib.data.shuffle_and_repeat(shuffle_buffer_size, n_epochs)). \
+        apply(tf.data.experimental.shuffle_and_repeat(shuffle_buffer_size, n_epochs)). \
         map(lambda x: dataset_fft_to_mel_single(x, block_len, num_freqs, linear_to_mel_weight_matrix, all_labels, True), num_parallel_calls=4). \
         batch(batch_size). \
         prefetch(5)
@@ -77,13 +77,13 @@ def trainmodel(trainset, testset, all_labels, num_freqs, block_len, write_dir, c
         batch(batch_size). \
         prefetch(5)
 
-    handle = tf.placeholder(tf.string, shape=[], name='iterator_handle')
-    iterator = tf.data.Iterator.from_string_handle(
+    handle = tf.compat.v1.placeholder(tf.string, shape=[], name='iterator_handle')
+    iterator = tf.compat.v1.data.Iterator.from_string_handle(
         handle, dataset_train.output_types, dataset_train.output_shapes)
     x, y = iterator.get_next(name='xinput')
 
-    training_iterator = dataset_train.make_initializable_iterator()
-    test_iterator = dataset_test.make_initializable_iterator()
+    training_iterator = tf.compat.v1.data.make_initializable_iterator(dataset_train)
+    test_iterator = tf.compat.v1.data.make_initializable_iterator(dataset_test)
 
     # create model
     with slim.arg_scope(residual_parameters(weight_decay=0.00004, batch_norm_decay=0.9997, batch_norm_epsilon=0.001, reg=3, elu=True)):
@@ -95,53 +95,53 @@ def trainmodel(trainset, testset, all_labels, num_freqs, block_len, write_dir, c
                                          reg=3, weight_decay=0.00004)
 
     size = lambda v: reduce(lambda x, y: x*y, v.get_shape().as_list())
-    n = sum(size(v) for v in tf.trainable_variables())
+    n = sum(size(v) for v in tf.compat.v1.trainable_variables())
     print("Total trainable parameters: ", n)
 
     one_hot_labels = slim.one_hot_encoding(y, num_categories)
-    loss = tf.losses.softmax_cross_entropy(one_hot_labels, logits)
+    loss = tf.compat.v1.losses.softmax_cross_entropy(one_hot_labels, logits)
 
-    total_loss = tf.losses.get_total_loss(add_regularization_losses=True)
+    total_loss = tf.compat.v1.losses.get_total_loss(add_regularization_losses=True)
 
-    global_step = tf.train.get_or_create_global_step()
+    global_step = tf.compat.v1.train.get_or_create_global_step()
 
-    learning_rate = tf.train.exponential_decay(0.1, global_step, 500, 0.96, staircase=True)
-    optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+    learning_rate = tf.compat.v1.train.exponential_decay(0.1, global_step, 500, 0.96, staircase=True)
+    optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate=learning_rate)
 
     train_op = slim.learning.create_train_op(total_loss, optimizer, global_step=global_step)
 
-    predidx = tf.argmax(predictions, axis=1, name='predidx')
+    predidx = tf.argmax(input=predictions, axis=1, name='predidx')
     train_measures, train_updates = slim.metrics.aggregate_metric_map({
         'train/Count': tf.contrib.metrics.count(y, name='train_c'),
-        'train/Accuracy': tf.metrics.accuracy(y, predidx, name='train_a'),
-        'train/PerClass': tf.metrics.mean_per_class_accuracy(y, predidx, num_categories, name='train_ca'),
-        'train/ConfusionMT': sum_tensor(tf.confusion_matrix(y, predidx, num_categories, name='train_cm'),name='train_scm')
+        'train/Accuracy': tf.compat.v1.metrics.accuracy(y, predidx, name='train_a'),
+        'train/PerClass': tf.compat.v1.metrics.mean_per_class_accuracy(y, predidx, num_categories, name='train_ca'),
+        'train/ConfusionMT': sum_tensor(tf.math.confusion_matrix(labels=y, predictions=predidx, num_classes=num_categories, name='train_cm'),name='train_scm')
     })
     train_measures['train/LearningRate'] = learning_rate
 
-    test_predidx = tf.argmax(test_predictions, axis=1, name='test_predidx')
+    test_predidx = tf.argmax(input=test_predictions, axis=1, name='test_predidx')
     test_measures, test_updates = slim.metrics.aggregate_metric_map({
         'test/Count': tf.contrib.metrics.count(y, name='test_c'),
-        'test/Accuracy': tf.metrics.accuracy(y, test_predidx, name='test_a'),
-        'test/PerClass': tf.metrics.mean_per_class_accuracy(y, test_predidx, num_categories, name='test_ca'),
-        'test/ConfusionMT': sum_tensor(tf.confusion_matrix(y, test_predidx, num_categories, name='test_cm'), name='test_scm')
+        'test/Accuracy': tf.compat.v1.metrics.accuracy(y, test_predidx, name='test_a'),
+        'test/PerClass': tf.compat.v1.metrics.mean_per_class_accuracy(y, test_predidx, num_categories, name='test_ca'),
+        'test/ConfusionMT': sum_tensor(tf.math.confusion_matrix(labels=y, predictions=test_predidx, num_classes=num_categories, name='test_cm'), name='test_scm')
     })
 
     all_m = dict(train_measures)
     all_m.update(test_measures)
     summary = add_summary_ops(all_m, add_variables=True, confmat_size=num_categories)
 
-    config_proto = tf.ConfigProto()
+    config_proto = tf.compat.v1.ConfigProto()
     config_proto.gpu_options.allow_growth = True
 
     sum_dir = write_dir + ('' if split_i is None else '/split' + str(split_i))
-    tf.gfile.MakeDirs(sum_dir)
+    tf.io.gfile.makedirs(sum_dir)
 
-    with tf.train.MonitoredTrainingSession(checkpoint_dir=sum_dir, config=config_proto) as sess:
+    with tf.compat.v1.train.MonitoredTrainingSession(checkpoint_dir=sum_dir, config=config_proto) as sess:
         training_handle = sess.run(training_iterator.string_handle())
         test_handle = sess.run(test_iterator.string_handle())
         sess.run(training_iterator.initializer)
-        for var in sess.graph.get_collection(tf.GraphKeys.METRIC_VARIABLES):
+        for var in sess.graph.get_collection(tf.compat.v1.GraphKeys.METRIC_VARIABLES):
             sess.run(var.initializer)
 
         while not sess.should_stop():
@@ -158,7 +158,7 @@ def trainmodel(trainset, testset, all_labels, num_freqs, block_len, write_dir, c
                     # every 1000 iterations, do testing and update test measures
                     acc=test_model(sess, test_iterator, test_handle, test_predidx, y, test_updates)
                     # also reset training stats
-                    for var in [x for x in sess.graph.get_collection(tf.GraphKeys.METRIC_VARIABLES) if x.name.startswith('train')]:
+                    for var in [x for x in sess.graph.get_collection(tf.compat.v1.GraphKeys.METRIC_VARIABLES) if x.name.startswith('train')]:
                         sess.run(var.initializer)
 
     print(upd['test/Accuracy'])
@@ -170,7 +170,7 @@ def trainmodel(trainset, testset, all_labels, num_freqs, block_len, write_dir, c
 
 def test_model(sess, test_iterator, test_handle, predidx, y, updates):
     # init performance counters
-    for var in [x for x in sess.graph.get_collection(tf.GraphKeys.METRIC_VARIABLES) if x.name.startswith('test')]:
+    for var in [x for x in sess.graph.get_collection(tf.compat.v1.GraphKeys.METRIC_VARIABLES) if x.name.startswith('test')]:
         sess.run(var.initializer)
     # init test iterator
     sess.run(test_iterator.initializer)
@@ -187,4 +187,4 @@ def test_model(sess, test_iterator, test_handle, predidx, y, updates):
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()

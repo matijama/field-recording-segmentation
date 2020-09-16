@@ -7,15 +7,15 @@ from mean_zero_constraint import MeanZero
 def residual_model(inputs, num_classes, reuse = None, is_training=True, n_filt=8, is_music_layer1=True, n_res_lay=3, layer1_size=8, use_max_pool=None, use_atrous=True, n_modules=1, reg=3, weight_decay=0.0001, scope=''):
     if is_music_layer1:
         wr = get_regularizer(reg, weight_decay)
-        net = tf.layers.conv2d(inputs, n_filt, [1, layer1_size], padding='SAME',
+        net = tf.compat.v1.layers.conv2d(inputs, n_filt, [1, layer1_size], padding='SAME',
                                activation=None, use_bias=False,
-                               kernel_initializer=tf.contrib.layers.variance_scaling_initializer(),kernel_regularizer=wr,
+                               kernel_initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=2.0),kernel_regularizer=wr,
                                kernel_constraint=MeanZero(1),
                                reuse=reuse, name='conv000')
 
-        net1 = tf.layers.conv2d(inputs, n_filt, [layer1_size, 1], padding='SAME',
+        net1 = tf.compat.v1.layers.conv2d(inputs, n_filt, [layer1_size, 1], padding='SAME',
                                activation=None, use_bias=False,
-                               kernel_initializer=tf.contrib.layers.variance_scaling_initializer(),kernel_regularizer=wr,
+                               kernel_initializer=tf.compat.v1.keras.initializers.VarianceScaling(scale=2.0),kernel_regularizer=wr,
                                kernel_constraint=MeanZero(0),
                                reuse=reuse, name='conv001')
 
@@ -96,7 +96,7 @@ def residual_parameters(weight_decay=0.00004, batch_norm_decay=0.9997, batch_nor
 
 
 def resnet_block(inputs, n_filt, scope):
-    with tf.variable_scope(scope):
+    with tf.compat.v1.variable_scope(scope):
 
         preact = slim.batch_norm(inputs, scope='preact')
 

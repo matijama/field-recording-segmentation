@@ -8,8 +8,8 @@ def calc_features(fileName, duration=None):
     y, sr = librosa.load(fileName, sr=22050, mono=True, duration=duration)
     y = y / max(abs(y)) * 0.9
 
-    fftsize = 1024  # google 512
-    stepsize = 315  # google 256, Jan Schluter
+    fftsize = 1024
+    stepsize = 315
 
     minF = 0
     maxF = 11025
@@ -41,7 +41,7 @@ def print_features(do_mel=3):
 
     fl=[('C:\\Users\\matic\\Research\\Databases\\transcription\\piano\\piano keys normalized\\BOE_LOUD\\A4.BOE_LD.WAV','i')]
     for (fileName, label) in [x for x in fl if x[1]=='i']:
-        features,freqs,sr=calc_features(fileName, do_mel)
+        features,freqs,sr=calc_features(fileName)
         oneframe = np.transpose(features[10:106,:,1])
         np.savetxt('oneframe.csv',oneframe,delimiter='\t')
         break
@@ -52,4 +52,4 @@ def main(_):
 
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()

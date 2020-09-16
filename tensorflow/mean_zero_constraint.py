@@ -23,7 +23,7 @@ class MeanZero(Constraint):
         self.axis = axis
 
     def __call__(self, w):
-        mean=tf.reduce_mean(w,axis=self.axis,keepdims=True)
+        mean=tf.reduce_mean(input_tensor=w,axis=self.axis,keepdims=True)
         w = w - mean
         return w
 
