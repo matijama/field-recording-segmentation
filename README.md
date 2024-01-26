@@ -12,6 +12,10 @@ The folder contains Python code for training and using the deep learning models 
 The folder contains Matlab code for probabilistic segmentation of field recordings based on energy and classification into a set of classes (e.g. speech, singing, instrumental etc.)
 * segmentRecordingDeep.m is the main function that takes an audio file (field recording) and probabilities of classification of the file into a set of classes (as returned e.g. by the tensorflow model) and returns the segment boundaries and segment labels.
 
+## Python
+The folder contains Python code for probabilistic segmentation of field recordings based on energy and classification into a set of classes (e.g. speech, singing, instrumental etc.)
+* segmentRecordingDeep.py takes all audio files (field recording) and correspoding probabilities of classification into a set of classes (as returned e.g. by the tensorflow model) and returns the segment boundaries and segment labels. Working directory, classification file tag, segmentation file tag, csv separator and labels are read from default.ini.
+
 ## MIREX 2015, 2018
 The folders contains our submissions to [MIREX 2015 Music/Speech Classification and Detection task](https://www.music-ir.org/mirex/wiki/2015:Music/Speech_Classification_and_Detection_Results), as well as [MIREX 2018 Music and or Speech Detection task](https://www.music-ir.org/mirex/wiki/2018:Music_and_or_Speech_Detection_Results). See the enclosed READMEs for usage.
 
