@@ -14,8 +14,8 @@ def calc_features(fileName, duration=None):
     minF = 0
     maxF = 11025
 
-    D = np.abs(librosa.stft(y, fftsize, stepsize))
-    freqs = librosa.fft_frequencies(22050, fftsize)
+    D = np.abs(librosa.stft(y, n_fft=fftsize, hop_length=stepsize))
+    freqs = librosa.fft_frequencies(sr=22050, n_fft=fftsize)
     D = D[np.logical_and(freqs >= minF, freqs <= maxF), :]
     freqs = freqs[np.logical_and(freqs >= minF, freqs <= maxF)]
     D = D.transpose()

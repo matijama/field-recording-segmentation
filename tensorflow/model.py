@@ -1,5 +1,5 @@
 import tensorflow as tf
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 from utils import get_regularizer
 from mean_zero_constraint import MeanZero
 

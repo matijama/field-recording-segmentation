@@ -1,8 +1,9 @@
-import tensorflow.contrib.slim as slim
+import tf_slim as slim
 import configparser
 import math
 import glob
 import os
+from pathlib2 import Path
 
 from tf_readwrite import *
 from model import residual_model, residual_parameters
@@ -16,9 +17,12 @@ def main(_):
     checkpoint_dir = config['Folders']['trained_model_dir']
 
     # change folder name to contain files to label
-    filenames=glob.glob(os.path.join(config['Folders']['db_root'],'*.mp3'))
+    labels_dir = Path(os.path.join(config['Folders']['db_root']))
+    filenames = labels_dir.rglob('*.mp3')
 
-    for file_name in filenames:
+    for filename in filenames:
+        file_name = str(filename)
+        print(file_name)
 
         if os.path.isfile(file_name + '.score.csv'):
             continue
@@ -35,7 +39,7 @@ def main(_):
 
         with tf.compat.v1.Session(graph=tf.Graph()) as sess:
 
-            tf.saved_model.loader.load(sess, ['scoring-tag'], checkpoint_dir)
+            tf.compat.v1.saved_model.loader.load(sess, ['scoring-tag'], checkpoint_dir)
             predictions = tf.compat.v1.get_default_graph().get_tensor_by_name("predictions:0")
 
             j = 0
@@ -54,6 +58,7 @@ def main(_):
 
                 inp=inp[:k+1,:,:,:]
                 all_pred = sess.run(predictions, feed_dict={'xinput:0': inp})
+                all_pred  = np.round(all_pred, 2)
 
                 if (preds is None):
                     preds = np.zeros((math.ceil(D.shape[1] / label_step_size), all_pred.shape[1]))
